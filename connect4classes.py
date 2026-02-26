@@ -84,6 +84,6 @@ class Game:
                 print('it is a tie')
                 break
             self.switch_player()
-
-game = Game()
-game.run()
+if __name__ == '__main__':
+    game = Game()
+    game.run()
