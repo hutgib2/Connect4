@@ -20,20 +20,20 @@ screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption('snake')
 clock = pygame.time.Clock()
 running = True
-food = (random.randint(0, rows-1), random.randint(0, cols-1))
+food = (random.randint(1, rows-2), random.randint(1, cols-2))
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_w:
+            if event.key == pygame.K_w and direction != (1, 0):
                 direction = (-1, 0)
-            if event.key == pygame.K_s:
+            if event.key == pygame.K_s and direction != (-1, 0):
                 direction = (1, 0)
-            if event.key == pygame.K_a:
+            if event.key == pygame.K_a and direction != (0, 1):
                 direction = (0, -1)
-            if event.key == pygame.K_d:
+            if event.key == pygame.K_d and direction != (0, -1):
                 direction = (0, 1)
     head_row, head_col = snake[0]
     d_row, d_col = direction
@@ -41,7 +41,7 @@ while running:
 
     # wall_collision
     if new_head == food:
-        food = (random.randint(0, rows-1), random.randint(0, cols-1))
+        food = (random.randint(1, rows-2), random.randint(1, cols-2))
     else:
         snake.pop()
     
@@ -61,8 +61,12 @@ while running:
     f_row, f_col = food
     pygame.draw.rect(screen, (255, 128, 0), (f_col*cell_size, f_row*cell_size, cell_size, cell_size))
     score = len(snake) - 3
-    draw_text(f'Score: {score}', (255, 255, 255), 10, 10)
+    draw_text(f'Score: {score}', (255, 255, 255), 8, 8)
     pygame.display.update()
-    clock.tick(10)
+    clock.tick(8)
+draw_text('WASTED', (128, 0, 0), width / 2, height / 2)
+draw_text(f'Final Score: {score}', (128, 0, 0), width / 2, 100 + height / 2)
+pygame.display.update()
+pygame.time.wait(2000)
 pygame.quit()
 sys.exit()
