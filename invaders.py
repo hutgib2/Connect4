@@ -27,7 +27,7 @@ chance = 0
 score = 0
 for i in range(12):
     for j in range(5):
-        enemies.append([i*128+width/32, j*128+height// 256])
+        enemies.append([i*128+width//32, j*128+height// 256])
 # Initial game loop
 while running:
     if game_state == "menu":
@@ -60,7 +60,7 @@ while running:
                     difficulty = "literally impossible"
                     game_state = "playing"
                     enemy_speed = 16
-                    chance 0.01
+                    chance = 0.01
 
 
      
@@ -83,30 +83,24 @@ while running:
             if player_x > width:
                 player_x = 0
             
-        for bullet in bullets:
+        for bullet in bullets[:]:
             bullet[1] -= bullet_speed
             if bullet[1] < 0:
                 bullets.remove(bullet)
         
-        for enemy_bullet in enemy_bullets:
+        for enemy_bullet in enemy_bullets[:]:
             enemy_bullet[1]  += enemy_bullet_speed
-            if enemy_bullet[1] < 0:
+            if enemy_bullet[1] > height:
                 enemy_bullets.remove(enemy_bullet)
         
         
-        for enemy in enemies:
+        for enemy in enemies[:]:
             if random.random() < chance:
                 enemy_bullets.append([enemy[0]+32,  enemy[1]])
 
             if difficulty != "literally impossible":
                 enemy[0] += enemy_speed
-                if enemy[0] > width-40 or enemy[0] < 0:
-                    enemy_speed *= -1
-                    for enemy in enemies:
-                        enemy[1]+=20
-                if enemy[1] > height:
-                    enemy[1] = 0
-                    score -= 1
+            
             else:
                 enemy[1] += 5
                 if enemy[1] > height:
@@ -114,12 +108,23 @@ while running:
                     # score -= 1
                     game_state = "game_over"
 
+        for enemy in enemies[:]:
+            if enemy[0] > width-40 or enemy[0] < 0:
+                    enemy_speed *= -1
+                    for e in enemies[:]:
+                        e[1]+=20
+                    break
+
         for bullet in bullets[:]:
             for enemy in enemies[:]:
                 if abs(bullet[0] - enemy[0]) <= 64 and abs(bullet[1] - enemy[1]) <= 64:
-                    bullets.remove(bullet)
-                    enemies.remove(enemy)
-                    score += 1
+                        bullets.remove(bullet)
+                        enemies.remove(enemy)
+                        score += 1
+
+        for enemy_bullet in enemy_bullets[:]:
+            if abs(enemy_bullet[0] - player_x) <= 32 and abs(enemy_bullet[1] - player_y) <= 32:
+                game_state = "game_over"
             
         screen.fill((0,0,0))
         pygame.draw.rect(screen, (0, 255, 0),  (player_x, player_y, 64, 32))
@@ -137,7 +142,7 @@ while running:
         screen.fill((0, 0, 0,))
         game_over_text = font.render("Congratulations, you just doomed humanity because of your incompetence", True,(100, 0, 0))
         score_text = font.render(f"final score: {score}", True, (255, 255, 255))
-        screen.blit(game_over_text, (20, height // 2 - 100))
+        screen.blit(game_over_text, (300, height // 2 - 100))
         screen.blit(score_text, (width // 2 - 100, height // 2 + 50))
         pygame.display.update()
 
