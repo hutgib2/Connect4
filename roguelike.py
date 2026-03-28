@@ -40,6 +40,35 @@ def spawn_enemy():
     elif side == 'right':
         return [width, random.randint(0, height)]
 
+def reset_game():
+    global game_over, font, width, height, screen, running, clock, score, player_x, player_y, player_speed, direction, dx, dy, bullets, bullet_speed, enemies, enemy_speed, current_wave
+    game_over = False
+    font = pygame.font.SysFont(None, 128)
+    # Set up screen
+    width = 2000
+    height = 1440
+    screen = pygame.display.set_mode((width, height))
+    # Initialise variables
+    running = True
+    clock = pygame.time.Clock()
+    score = 0
+    # player
+    player_x = width // 2
+    player_y = height // 2
+    player_speed = 16
+    direction = (0, -1)
+    dx = 1
+    dy = 0
+    # bullets
+    bullets = []
+    bullet_speed = 32
+    # demons
+    enemies = []
+    enemy_speed = 8
+    current_wave = 1
+    for i in range(1):
+        enemies.append(spawn_enemy())
+
 for i in range(1):
     enemies.append(spawn_enemy())
 
@@ -56,6 +85,8 @@ while running:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_k:
                     bullets.append([player_x, player_y, direction[0], direction[1]])
+                if game_over and event.key == pygame.K_r:
+                    reset_game()
     dx = 0
     dy = 0
     keys = pygame.key.get_pressed()
