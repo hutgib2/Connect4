@@ -2,6 +2,7 @@
 import pygame
 import sys
 import random
+# import images
 # Initialise pygame
 pygame.init()
 game_over = False
@@ -158,6 +159,9 @@ while running:
 
     if game_over:
         screen.blit(font.render("doomslayer has been slayed", True, (128,0,0)), (width // 5, height // 2))
+        pygame.display.update()
+        pygame.time.wait(2000)
+        running = False
     pygame.display.update()
 
 pygame.quit()
