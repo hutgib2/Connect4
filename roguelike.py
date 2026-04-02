@@ -18,6 +18,7 @@ clock = pygame.time.Clock()
 score = 0
 angle = 0
 radius = 200
+start_screen = True
 # player
 player_x = width // 2
 player_y = height // 2
@@ -44,40 +45,24 @@ def spawn_enemy():
     elif side == 'right':
         return [width, random.randint(0, height)]
 
-def reset_game():
-    global game_over, font, width, height, screen, running, clock, score, player_x, player_y, player_speed, direction, dx, dy, bullets, bullet_speed, enemies, enemy_speed, current_wave
-    game_over = False
-    font = pygame.font.SysFont(None, 128)
-    # Set up screen
-    width = 2000
-    height = 1440
-    screen = pygame.display.set_mode((width, height))
-    # Initialise variables
-    running = True
-    clock = pygame.time.Clock()
-    score = 0
-    # player
-    player_x = width // 2
-    player_y = height // 2
-    player_speed = 16
-    direction = (0, -1)
-    dx = 1
-    dy = 0
-    # bullets
-    bullets = []
-    bullet_speed = 32
-    # demons
-    enemies = []
-    enemy_speed = 8
-    current_wave = 1
-    for i in range(1):
-        enemies.append(spawn_enemy())
 
 for i in range(1):
     enemies.append(spawn_enemy())
 
 # initial game loop
 running = True
+
+while start_screen:
+    screen.fill((0,0,0))
+    screen.blit(font.render("Press P to play", True, (255, 255, 255)), (width // 3, height // 2))
+    pygame.display.update()
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            start_screen = False
+            running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_p:
+                start_screen = False
 
 while running:
     clock.tick(60)
