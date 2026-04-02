@@ -22,7 +22,7 @@ start_screen = True
 # player
 player_x = width // 2
 player_y = height // 2
-player_speed = 16
+player_speed = 10
 direction = (0, -1)
 dx = 1
 dy = 0
@@ -37,13 +37,24 @@ current_wave = 1
 def spawn_enemy():
     side = random.choice(['left', 'right', 'top', 'bottom'])
     if side == 'top':
-        return [random.randint(0, width), 0]
+        return {'x': random.randint(0, width), 'y': 0, 'speed': 4, 'health': 1, 'type': 'minion'}
     elif side == 'bottom':
-        return [random.randint(0, width), height]
+        return {'x': random.randint(0, width), 'y': height, 'speed': 4, 'health': 1, 'type': 'minion'}
     if side == 'left':
-        return [0, random.randint(0, height)]
+        return {'x': 0, 'y': random.randint(0, height), 'speed': 4, 'health': 1, 'type': 'minion'}
     elif side == 'right':
-        return [width, random.randint(0, height)]
+        return {'x': width, 'y': random.randint(0, height), 'speed': 4, 'health': 1, 'type': 'minion'}
+
+def spawn_boss():
+    side = random.choice(['left', 'right', 'top', 'bottom'])
+    if side == 'top':
+        return {'x': random.randint(0, width), 'y': 0, 'speed': 2, 'health': current_wave, 'type': 'boss'}
+    elif side == 'bottom':
+        return {'x': random.randint(0, width), 'y': height, 'speed': 2, 'health': current_wave, 'type': 'boss'}
+    if side == 'left':
+        return {'x': 0, 'y': random.randint(0, height), 'speed': 2, 'health': current_wave, 'type': 'boss'}
+    elif side == 'right':
+        return {'x': width, 'y': random.randint(0, height), 'speed': 2, 'health': current_wave, 'type': 'boss'}
 
 
 for i in range(1):
@@ -101,14 +112,14 @@ while running:
 
     if not game_over:
         for enemy in enemies:
-            if enemy[0] < player_x:
-                enemy[0] += enemy_speed
-            elif enemy[0] > player_x:
-                enemy[0] -= enemy_speed
-            if enemy[1] < player_y:
-                enemy[1] += enemy_speed
-            elif enemy[1] > player_y:
-                enemy[1] -= enemy_speed
+            if enemy['x'] < player_x:
+                enemy['x'] += enemy['speed']
+            elif enemy['x'] > player_x:
+                enemy['x'] -= enemy['speed']
+            if enemy['y'] < player_y:
+                enemy['y'] += enemy['speed']
+            elif enemy['y'] > player_y:
+                enemy['y'] -= enemy['speed']
 
         for bullet in bullets[:]:
             bullet[0] -= bullet[2]*bullet_speed
@@ -119,34 +130,42 @@ while running:
                 continue
             
             for enemy in enemies[:]:
-                if abs(bullet[0] - enemy[0]) <= 64 and abs(bullet[1] - enemy[1]) <= 64:
+                if abs(bullet[0] - enemy['x']) <= 64 and abs(bullet[1] - enemy['y']) <= 64:
                     try:
                         bullets.remove(bullet)
                     except ValueError:
                         continue
-                    enemies.remove(enemy)
-                    score += 1
+                    enemy['health'] -= 1
+                    if enemy['health'] == 0:
+                        enemies.remove(enemy)
+                        score += 1
                     if len(enemies) ==  0:
                         current_wave += 1
                         for i in range(current_wave):
                             enemies.append(spawn_enemy())
+                            if (i+1) % 5 == 0 and current_wave % 5 == 0:
+                                enemies.append(spawn_boss())
                     break
         for enemy in enemies[:]:
-            dif_x = enemy[0] - (player_x + 32)
-            dif_y = enemy[1] - (player_y + 32)
+            dif_x = enemy['x'] - (player_x + 32)
+            dif_y = enemy['y'] - (player_y + 32)
             distance = math.hypot(dif_x, dif_y)
             dif_angle = abs(math.atan2(dif_y, dif_x) - angle)  % (2 * math.pi)
             if (distance <= radius) and (dif_angle <= math.radians(30)):
-                enemies.remove(enemy)
-                score += 1
+                enemy['health'] -= 1
+                if enemy['health'] == 0:
+                    enemies.remove(enemy)
+                    score += 1
                 if len(enemies) ==  0:
                     current_wave += 1
                     for i in range(current_wave):
                         enemies.append(spawn_enemy())
+                        if (i+1) % 5 == 0 and current_wave %5 == 0:
+                            enemies.append(spawn_boss())
                 break
 
         for enemy in enemies[:]:
-            if abs(enemy[0] - player_x) <= 64 and abs(enemy[1] - player_y) <= 64:
+            if abs(enemy['x'] - player_x) <= 64 and abs(enemy['y'] - player_y) <= 64:
                 game_over = True
 
     pygame.draw.rect(screen, (0, 255, 0),  (player_x, player_y, 64, 64))
@@ -154,8 +173,10 @@ while running:
     pygame.draw.line(screen, (255, 255, 0), (player_x+32, player_y+32), (tip_x, tip_y), 16)
 
     for enemy in enemies:
-        pygame.draw.rect(screen, (255, 0, 0), (enemy[0], enemy[1], 64, 64))
-
+        if enemy['type'] == 'minion':
+            pygame.draw.rect(screen, (255, 0, 0), (enemy['x'], enemy['y'], 64, 64))
+        else:
+            pygame.draw.rect(screen, (255, 0, 255), (enemy['x'], enemy['y'], 256, 256))
     for bullet in bullets:
             pygame.draw.rect(screen, (255, 255, 255), (bullet[0], bullet[1], 32, 32))
 
