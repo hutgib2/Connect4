@@ -37,24 +37,24 @@ current_wave = 1
 def spawn_enemy():
     side = random.choice(['left', 'right', 'top', 'bottom'])
     if side == 'top':
-        return {'x': random.randint(0, width), 'y': 0, 'speed': 4, 'health': 1, 'type': 'minion'}
+        return {'x': random.randint(0, width), 'y': 0, 'speed': 4, 'health': 1, 'type': 'minion', 'size': 64}
     elif side == 'bottom':
-        return {'x': random.randint(0, width), 'y': height, 'speed': 4, 'health': 1, 'type': 'minion'}
+        return {'x': random.randint(0, width), 'y': height, 'speed': 4, 'health': 1, 'type': 'minion', 'size': 64}
     if side == 'left':
-        return {'x': 0, 'y': random.randint(0, height), 'speed': 4, 'health': 1, 'type': 'minion'}
+        return {'x': 0, 'y': random.randint(0, height), 'speed': 4, 'health': 1, 'type': 'minion', 'size': 64}
     elif side == 'right':
-        return {'x': width, 'y': random.randint(0, height), 'speed': 4, 'health': 1, 'type': 'minion'}
+        return {'x': width, 'y': random.randint(0, height), 'speed': 4, 'health': 1, 'type': 'minion', 'size': 64}
 
 def spawn_boss():
     side = random.choice(['left', 'right', 'top', 'bottom'])
     if side == 'top':
-        return {'x': random.randint(0, width), 'y': 0, 'speed': 2, 'health': current_wave, 'type': 'boss'}
+        return {'x': random.randint(0, width), 'y': 0, 'speed': 2, 'health': current_wave, 'type': 'boss', 'size': 256}
     elif side == 'bottom':
-        return {'x': random.randint(0, width), 'y': height, 'speed': 2, 'health': current_wave, 'type': 'boss'}
+        return {'x': random.randint(0, width), 'y': height, 'speed': 2, 'health': current_wave, 'type': 'boss', 'size': 256}
     if side == 'left':
-        return {'x': 0, 'y': random.randint(0, height), 'speed': 2, 'health': current_wave, 'type': 'boss'}
+        return {'x': 0, 'y': random.randint(0, height), 'speed': 2, 'health': current_wave, 'type': 'boss', 'size': 256}
     elif side == 'right':
-        return {'x': width, 'y': random.randint(0, height), 'speed': 2, 'health': current_wave, 'type': 'boss'}
+        return {'x': width, 'y': random.randint(0, height), 'speed': 2, 'health': current_wave, 'type': 'boss', 'size': 256}
 
 def kill_enemy(enemy):
     global score
@@ -68,6 +68,16 @@ def next_wave():
         enemies.append(spawn_enemy())
         if (i+1) % 5 == 0 and current_wave %5 == 0:
             enemies.append(spawn_boss())
+
+def colliding(ax, ay, asize, bx, by, bsize):
+    center_ax = ax+asize // 2
+    center_ay = ay+asize // 2
+    center_bx  = bx+bsize // 2
+    center_by = by+bsize // 2
+    if abs(center_ax-center_bx) <= (asize+bsize) // 2 and abs(center_ay-center_by) <= (asize+bsize) // 2:
+        return True
+    else:
+        return False
 
 def load_high_score():
     try:
@@ -166,7 +176,7 @@ while running:
                 continue
             
             for enemy in enemies[:]:
-                if abs(bullet[0] - enemy['x']) <= 64 and abs(bullet[1] - enemy['y']) <= 64:
+                if colliding(bullet[0], bullet[1], 32, enemy['x'], enemy['y'], enemy['size']):
                     try:
                         bullets.remove(bullet)
                     except ValueError:
@@ -182,7 +192,7 @@ while running:
             dif_y = enemy['y'] - (player_y + 32)
             distance = math.hypot(dif_x, dif_y)
             dif_angle = abs(math.atan2(dif_y, dif_x) - angle)  % (2 * math.pi)
-            if (distance <= radius) and (dif_angle <= math.radians(30)):
+            if (distance <= radius) and (dif_angle <= math.radians(30)) and enemy['type'] != 'boss':
                 enemy['health'] -= 1
                 if enemy['health'] == 0:
                     kill_enemy(enemy)
@@ -191,7 +201,7 @@ while running:
                 break
 
         for enemy in enemies[:]:
-            if abs(enemy['x'] - player_x) <= 64 and abs(enemy['y'] - player_y) <= 64:
+            if colliding(player_x, player_y, 64, enemy['x'], enemy['y'], enemy['size']):
                 game_over = True
 
     pygame.draw.rect(screen, (0, 255, 0),  (player_x, player_y, 64, 64))
