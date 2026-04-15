@@ -22,7 +22,7 @@ start_screen = True
 # player
 player_x = width // 2
 player_y = height // 2
-player_speed = 10
+player_speed = 8
 direction = (0, -1)
 dx = 1
 dy = 0
@@ -56,6 +56,18 @@ def spawn_boss():
     elif side == 'right':
         return {'x': width, 'y': random.randint(0, height), 'speed': 2, 'health': current_wave, 'type': 'boss', 'size': 256}
 
+def spawn_mob():
+    side = random.choice(['left', 'right', 'top', 'bottom'])
+    if side == 'top':
+        return {'x': random.randint(0, width), 'y': 0, 'speed': 10, 'health': 1, 'type': 'mob', 'size': 32}
+    elif side == 'bottom':
+        return {'x': random.randint(0, width), 'y': height, 'speed': 10, 'health': 1, 'type': 'mob', 'size': 32}
+    if side == 'left':
+        return {'x': 0, 'y': random.randint(0, height), 'speed': 10, 'health': 1, 'type': 'mob', 'size': 32}
+    elif side == 'right':
+        return {'x': width, 'y': random.randint(0, height), 'speed': 10, 'health': 1, 'type': 'mob', 'size': 32}
+
+
 def kill_enemy(enemy):
     global score
     score += 1
@@ -68,6 +80,8 @@ def next_wave():
         enemies.append(spawn_enemy())
         if (i+1) % 5 == 0 and current_wave %5 == 0:
             enemies.append(spawn_boss())
+        if (i+1) % 3 == 0 and current_wave %3 == 0:
+            enemies.append(spawn_mob())
 
 def colliding(ax, ay, asize, bx, by, bsize):
     center_ax = ax+asize // 2
@@ -211,6 +225,8 @@ while running:
     for enemy in enemies:
         if enemy['type'] == 'minion':
             pygame.draw.rect(screen, (255, 0, 0), (enemy['x'], enemy['y'], 64, 64))
+        elif enemy['type'] == 'mob':
+            pygame.draw.rect(screen, (0, 255, 255), (enemy['x'], enemy['y'], 32, 32))
         else:
             pygame.draw.rect(screen, (255, 0, 255), (enemy['x'], enemy['y'], 256, 256))
     for bullet in bullets:
