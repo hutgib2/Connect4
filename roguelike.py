@@ -22,6 +22,7 @@ start_screen = True
 player_health = 3
 powerups = []
 active_effects = {}
+particles = []
 # player
 player_x = width // 2
 player_y = height // 2
@@ -34,7 +35,7 @@ bullets = []
 bullet_speed = 32
 # demons
 enemies = []
-enemy_speed = 8
+enemy_speed = 0
 current_wave = 1
 invincible_timer = 0
 last_idle_direction = (0,0)
@@ -114,6 +115,10 @@ def choose_direction():
 def kill_enemy(enemy):
     global score
     score += 1
+    for i in range(6):
+        a = random.uniform(0, 2*math.pi)
+        speed = random.uniform(1, 5)
+        particles.append({'x': enemy['x']+enemy['size'] // 2, 'y': enemy['y']+enemy['size'] // 2, 'dx': math.cos(a)*speed, 'dy': math.sin(a)*speed, 'life': 20, 'color': (255, random.randint(50, 150), 0)})
     if random.random() <= 0.02:
         powerups.append(spawn_powerup(enemy))
     enemies.remove(enemy)
@@ -255,6 +260,14 @@ while running:
             elif enemy['y'] > player_y:
                 enemy['y'] -= enemy['speed']
 
+# PARTICLES
+        for particle in particles[:]:
+            particle['x'] += particle['dx']
+            particle['y'] += particle['dy']
+            particle['life'] -= 1
+            if particle['life'] <= 0:
+                particles.remove(particle)
+
 # POWERUPS
         for powerup in powerups[:]:
             powerup['timer'] -= 1
@@ -353,6 +366,10 @@ while running:
             pygame.draw.circle(screen, (255, 192, 203), (powerup['x'], powerup['y']), 20) # pink
         if powerup['type'] == 'faster swing':
             pygame.draw.circle(screen, (128, 128, 128), (powerup['x'], powerup['y']), 20) # grey
+    
+    for particle in particles:
+        size = max(1, particle['life'] // 4)
+        pygame.draw.rect(screen, particle['color'], (int(particle['x']), int(particle['y']), size, size))
 
     # SCORES
     screen.blit(font.render(f"score: {score}", True, (255,255,255)), (16, 16))
