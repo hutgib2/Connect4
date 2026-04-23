@@ -73,19 +73,8 @@ def spawn_mob():
         return {'x': width, 'y': random.randint(0, height), 'speed': 10, 'health': 1, 'type': 'mob', 'size': 32}
 
 def spawn_powerup(enemy):
-    ptype = random.choices(['speed boost', 'nuke', 'long reach', 'rear shot', 'side shot', 'shotgun'], weights = [20, 20, 20, 20, 20, 20])[0]
-    if ptype == 'speed boost':
-        return {'type': 'speed boost', 'x': enemy['x'], 'y': enemy['y'], 'timer': 1000}
-    if ptype == 'nuke':
-        return {'type': 'nuke', 'x': enemy['x'], 'y': enemy['y'], 'timer': 1000}
-    if ptype == 'long reach':
-        return {'type': 'long reach', 'x': enemy['x'], 'y': enemy['y'], 'timer': 1000}
-    if ptype == 'rear shot':
-        return {'type': 'rear shot', 'x': enemy['x'], 'y': enemy['y'], 'timer': 1000}
-    if ptype == 'side shot':
-        return {'type': 'side shot', 'x': enemy['x'], 'y': enemy['y'], 'timer': 1000}
-    if ptype == 'shotgun':
-        return {'type': 'shotgun', 'x': enemy['x'], 'y': enemy['y'], 'timer': 1000}
+    ptype = random.choices(['speed boost', 'nuke', 'long reach', 'rear shot', 'side shot', 'shotgun', 'faster swing'], weights = [20, 20, 20, 20, 20, 20, 20])[0]
+    return {'type': ptype, 'x': enemy['x'], 'y': enemy['y'], 'timer': 1000}
 
 def apply_powerup(ptype):
     global player_speed, score, enemies, radius
@@ -105,6 +94,8 @@ def apply_powerup(ptype):
         active_effects[ptype] = 300
     if ptype == 'shotgun':
         active_effects[ptype] = 300
+    if ptype == 'faster swing':
+        active_effects[ptype] = 300
 
 def remove_powerup(ptype):
     global player_speed, radius
@@ -123,15 +114,16 @@ def choose_direction():
 def kill_enemy(enemy):
     global score
     score += 1
-    if random.random() <= 0.025:
+    if random.random() <= 0.02:
         powerups.append(spawn_powerup(enemy))
     enemies.remove(enemy)
 
 def next_wave():
-    global current_wave, player_health, player_x, player_y
+    global current_wave, player_health, player_x, player_y, bullets
     current_wave += 1
     player_x = width // 2
     player_y = height // 2
+    bullets = []
     if player_health < 3:
         player_health += 1
     for i in range(current_wave):
@@ -201,8 +193,11 @@ while running:
         invincible_timer -= 1
     screen.fill((0,0,0))
     
-    # SWORD
-    angle += 0.1
+    # melee weapon
+    if 'faster swing' in active_effects:
+        angle += 0.4
+    else:
+        angle += 0.1
     tip_x = player_x + 32 + radius * math.cos(angle)
     tip_y = player_y + 32 + radius * math.sin(angle)
     
@@ -356,6 +351,8 @@ while running:
             pygame.draw.circle(screen, (100, 0, 100), (powerup['x'], powerup['y']), 20) # dark purple
         if powerup['type'] == 'shotgun':
             pygame.draw.circle(screen, (255, 192, 203), (powerup['x'], powerup['y']), 20) # pink
+        if powerup['type'] == 'faster swing':
+            pygame.draw.circle(screen, (128, 128, 128), (powerup['x'], powerup['y']), 20) # grey
 
     # SCORES
     screen.blit(font.render(f"score: {score}", True, (255,255,255)), (16, 16))
